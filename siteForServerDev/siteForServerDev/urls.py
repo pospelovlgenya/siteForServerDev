@@ -18,5 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 urlpatterns = [
+    path('singIn', name='SingIn'),
+    path('singUp', name='SingUp'),
     path('admin/', admin.site.urls),
 ]
