@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'authorizationModule',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,12 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# Custom user model with jwt tokens
+# *This custom app added in INSTALLED_APPS
+
+AUTH_USER_MODEL = 'authorizationModule.User'
 
 
 # Password validation
