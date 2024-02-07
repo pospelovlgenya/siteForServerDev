@@ -71,19 +71,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     # Генератор jwt токена
     def _generate_jwt_token(self):
-        expire_date = ( datetime.now() +
-        # Настройка времени истечения токена
-        timedelta(weeks=0, days=0, hours=0, minutes=10, seconds=0)
+        expire_date = (
+            datetime.now() +
+            # Настройка времени истечения токена
+            timedelta(weeks=0, days=0, hours=0, minutes=10, seconds=0)
         )
 
         token = jwt.encode(
-            payload={
+            payload=
+                {
                 'id':self.pk,
-                'exp':int(expire_date.strftime('%s'))
-            },
+                'exp':str(int(expire_date.timestamp())),
+                },
             key=settings.SECRET_KEY,
             algorithm='HS256'
         )
-
-        return token.decode('utf-8')
+        
+        return token
+    #.decode('utf-8')
 
