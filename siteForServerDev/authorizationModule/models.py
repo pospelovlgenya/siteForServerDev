@@ -1,4 +1,5 @@
 import jwt
+from easyjwt import EasyJWT
 
 from datetime import datetime, timedelta
 from django.conf import settings 
@@ -57,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
     
     @property
-    def create_token(self):
+    def get_token(self):
         # Сокращает команду для генерации токена
         return self._generate_jwt_token()
     
@@ -72,20 +73,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Генератор jwt токена
     def _generate_jwt_token(self):
         expire_date = (
-            datetime.now() +
+            datetime.utcnow() +
             # Настройка времени истечения токена
             timedelta(weeks=0, days=0, hours=0, minutes=10, seconds=0)
         )
 
-        token = jwt.encode(
-            payload=
-                {
-                'id':self.pk,
-                'exp':str(int(expire_date.timestamp())),
-                },
-            key=settings.SECRET_KEY,
-            algorithm='HS256'
-        )
+        token_object = EasyJWT(settings.SECRET_KEY)
+        token_object.issuer = self.get_full_name()
+        token_object.expiration_date = expire_date
+        token_object.audience = [str(self.is_staff), str(self.is_superuser)]
+
+        token = token_object.create()
         
         return token
     #.decode('utf-8')
