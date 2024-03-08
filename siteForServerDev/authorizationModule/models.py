@@ -88,13 +88,24 @@ class User(AbstractBaseUser, PermissionsMixin):
             key=settings.SECRET_KEY,
             algorithm="HS256"
         )
-        return jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
 
-class TokenForUser():
+        return token
+    # jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
+
+class TokenForUser(models.Model):
     token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     is_banned = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def ban_all_user_tokens(self, token_for_ban:str):
+        user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
+        b = TokenForUser.objects.filter(creator=user_for_ban).all()
+        for a in b:
+            a.is_banned = True
+        # b.save() 
+        return b.first()
     
+    def find_token(self, token:str):
+        return token
