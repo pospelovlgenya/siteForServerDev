@@ -1,7 +1,6 @@
-from easyjwt import EasyJWT
 import jwt
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.conf import settings 
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -60,8 +59,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def get_token(self):
         # Сокращает команду для генерации токена
-        # return self._generate_jwt_token()
-        return 0
+        # if действующий token есть в таблице
+        # то достать его
+        # иначе создать новый
+        return self._generate_new_jwt_token()
     
     # Необходим, так как у пользователя нет имени и фамилии
     def get_full_name(self):
@@ -70,58 +71,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Необходим, так как у пользователя нет имени и фамилии
     def get_short_name(self):
         return self.username
-    
-    # Генератор jwt токена
-    # def _generate_jwt_token(self):
-    #     expire_date = (
-    #         datetime.utcnow() +
-    #         # Настройка времени истечения токена
-    #         timedelta(weeks=0, days=0, hours=0, minutes=10, seconds=0)
-    #     )
 
-    #     token_object = EasyJWT(settings.SECRET_KEY)
-    #     token_object.strict_verification = False
-    #     token_object.issuer = self.get_full_name()
-    #     token_object.expiration_date = expire_date
-    #     token_object.audience = [str(self.is_staff), str(self.is_superuser)]
-
-    #     token = token_object.create()
-        
-    #     return token
-    #.decode('utf-8')
-
-    def gt(self):
+    def _generate_new_jwt_token(self):
         expire_date = (
             datetime.utcnow() +
             # Настройка времени истечения токена
-            timedelta(weeks=0, days=0, hours=0, minutes=10, seconds=0)
+            settings.JWT_TOKEN_LIFETIME
         )
 
         token = jwt.encode(
             payload={
                 "exp": expire_date,
-                # 'is_updated':False,
+                "nbf": datetime.utcnow(),
+                "is_staff": self.is_staff,
             },
             key=settings.SECRET_KEY,
             algorithm="HS256"
         )
-        return token
-
-    # def get_token(self):
-        # if действующий token есть в таблице
-        # то достать его
-        # иначе создать новый
-        # return 0
+        return jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
 
 class TokenForUser():
-    token = models.CharField(db_index=True, max_length=255, unique=True)
+    token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     is_banned = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
-
-
-# class TokenUser(models.Model):
-#     user = models.ForeignKey()
-#     token = models.ForeignKey()
+    
