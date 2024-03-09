@@ -57,10 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
     
     def get_token(self):
-        # if действующий token есть в таблице
-        # то достать его
-        # иначе создать новый
-        return self._generate_new_jwt_token()
+        return self.__generate_new_jwt_token__()
     
     # Необходим, так как у пользователя нет имени и фамилии
     def get_full_name(self):
@@ -70,10 +67,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.username
 
-    def save_token_to_bd(self, token:str):
+    def __save_token_to_bd__(self, token:str):
         TokenForUser.objects.create(token=token, creator=self)
 
-    def _generate_new_jwt_token(self):
+    def __generate_new_jwt_token__(self):
         expire_date = (
             datetime.utcnow() +
             # Настройка времени истечения токена
@@ -90,7 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             algorithm="HS256"
         )
 
-        self.save_token_to_bd(token)
+        self.__save_token_to_bd__(token)
         return token
     # jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
 
