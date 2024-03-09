@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
-
 from django.db import models
 
 
@@ -36,6 +35,7 @@ class UserManager(BaseUserManager):
 
         return user
     
+
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(db_index=True, max_length=255, unique=True)
     email = models.EmailField(db_index=True, unique=True)
@@ -56,9 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
     
-    @property
     def get_token(self):
-        # Сокращает команду для генерации токена
         # if действующий token есть в таблице
         # то достать его
         # иначе создать новый
@@ -71,6 +69,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Необходим, так как у пользователя нет имени и фамилии
     def get_short_name(self):
         return self.username
+
+    def save_token_to_bd(self, token:str):
+        TokenForUser.objects.create(token=token, creator=self)
 
     def _generate_new_jwt_token(self):
         expire_date = (
@@ -89,8 +90,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             algorithm="HS256"
         )
 
+        self.save_token_to_bd(token)
         return token
     # jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
+
 
 class TokenForUser(models.Model):
     token = models.CharField(db_index=True, max_length=255)
@@ -99,13 +102,9 @@ class TokenForUser(models.Model):
     is_updated = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def ban_all_user_tokens(self, token_for_ban:str):
+    def update():
+        return 0
+
+    def ban_all_user_tokens(token_for_ban:str):
         user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
-        b = TokenForUser.objects.filter(creator=user_for_ban).all()
-        for a in b:
-            a.is_banned = True
-        # b.save() 
-        return b.first()
-    
-    def find_token(self, token:str):
-        return token
+        TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
