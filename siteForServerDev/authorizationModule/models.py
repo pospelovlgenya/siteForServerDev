@@ -56,6 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
     
+    # позволяет пользователю получить новый токен
     def get_token(self):
         return self.__generate_new_jwt_token__()
     
@@ -67,9 +68,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.username
 
+    # для сохранения нового токена в бд
     def __save_token_to_bd__(self, token:str):
         TokenForUser.objects.create(token=token, creator=self)
 
+    # создаёт новый токен и сохраняет в бд токенов
     def __generate_new_jwt_token__(self):
         expire_date = (
             datetime.utcnow() +
@@ -99,9 +102,9 @@ class TokenForUser(models.Model):
     is_updated = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def update():
-        return 0
-
+    # метод для блокировки всех токенов пользователя
     def ban_all_user_tokens(token_for_ban:str):
         user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
         TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
+
+    
