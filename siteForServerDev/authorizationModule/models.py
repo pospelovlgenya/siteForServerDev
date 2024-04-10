@@ -106,5 +106,3 @@ class TokenForUser(models.Model):
     def ban_all_user_tokens(token_for_ban:str):
         user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
         TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
-
-    
