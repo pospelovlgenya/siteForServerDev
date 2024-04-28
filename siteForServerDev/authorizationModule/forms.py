@@ -15,7 +15,7 @@ class UserRegisterForm(UserCreationForm):
         ]
 
 class UserLoginForm(AuthenticationForm):
-    email = forms.CharField(label='Почта', widget=forms.EmailInput(attrs={
-        "class": "form-control"}))
+    #email = forms.CharField(label='Почта', widget=forms.EmailInput(attrs={
+    #    "class": "form-control"}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={
         "class": "form-control"}))

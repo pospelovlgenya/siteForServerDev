@@ -1,6 +1,6 @@
 import jwt
 
-from datetime import datetime
+from datetime import datetime, UTC
 from django.conf import settings 
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -69,13 +69,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
 
     # для сохранения нового токена в бд
-    def __save_token_to_bd__(self, token:str):
-        TokenForUser.objects.create(token=token, creator=self)
+    # def __save_token_to_bd__(self, token:str):
+    #     TokenForUser.objects.create(token=token, creator=self)
 
     # создаёт новый токен и сохраняет в бд токенов
     def __generate_new_jwt_token__(self):
         expire_date = (
-            datetime.utcnow() +
+            datetime.now(UTC) +
             # Настройка времени истечения токена
             settings.JWT_TOKEN_LIFETIME
         )
@@ -83,26 +83,38 @@ class User(AbstractBaseUser, PermissionsMixin):
         token = jwt.encode(
             payload={
                 "exp": expire_date,
-                "nbf": datetime.utcnow(),
+                "nbf": datetime.now(UTC),
                 "is_staff": self.is_staff,
             },
             key=settings.SECRET_KEY,
             algorithm="HS256"
         )
 
-        self.__save_token_to_bd__(token)
+        # self.__save_token_to_bd__(token)
         return token
     # jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
 
 
-class TokenForUser(models.Model):
+# class TokenForUser(models.Model):
+#     token = models.CharField(db_index=True, max_length=255)
+#     creator = models.ForeignKey(User, on_delete=models.CASCADE)
+#     is_banned = models.BooleanField(default=False)
+#     is_updated = models.BooleanField(default=False)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     # метод для блокировки всех токенов пользователя
+#     def ban_all_user_tokens(token_for_ban:str):
+#         user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
+#         TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
+
+
+class UpdatedTokens(models.Model):
     token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_banned = models.BooleanField(default=False)
-    is_updated = models.BooleanField(default=False)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now=True)
 
-    # метод для блокировки всех токенов пользователя
-    def ban_all_user_tokens(token_for_ban:str):
-        user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
-        TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
+
+class BannedTokens(models.Model):
+    token = models.CharField(db_index=True, max_length=255)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
