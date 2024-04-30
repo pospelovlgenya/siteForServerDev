@@ -3,6 +3,12 @@
 Home
 {% endblock %}
 {% block content %}
-<h2>Posts</h2>
-<p>No post</p>
+<h2>Начальная страница</h2>
+{% if request.user.is_authenticated and request.COOKIES.jwt_token %}
+    <a>Ваш jwt token = {{ request.COOKIES.jwt_token }}</a>
+    <a href="{%url 'refreshToken' %}">Проверить токен</a>
+{% else %}
+    <a>Токена не обнаружено</a>
+{% endif %}
+
 {% endblock %}

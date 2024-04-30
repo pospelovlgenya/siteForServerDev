@@ -56,10 +56,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
     
-    # позволяет пользователю получить новый токен
-    def get_token(self):
-        return self.__generate_new_jwt_token__()
-    
     # Необходим, так как у пользователя нет имени и фамилии
     def get_full_name(self):
         return self.username
@@ -67,10 +63,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Необходим, так как у пользователя нет имени и фамилии
     def get_short_name(self):
         return self.username
-
-    # для сохранения нового токена в бд
-    # def __save_token_to_bd__(self, token:str):
-    #     TokenForUser.objects.create(token=token, creator=self)
+    
+    # позволяет пользователю получить новый токен
+    def get_token(self):
+        if (BannedTokens.objects.filter(creator=self).count()):
+            return 'you in ban list'
+        return self.__generate_new_jwt_token__()
+    
+    # проверяет токен и обновляет
+    def refresh_token(self, token):
+        # проверка пользователя в таблице банов
+        if (BannedTokens.objects.filter(creator=self).count()):
+            return 'you in ban list'
+        # проверка токена в таблице недавно обновлённых
+        if (UpdatedTokens.objects.filter(token=token).count()):
+            BannedTokens.objects.create(
+            token = token,
+            creator = self
+            )
+            return 'you steal token'
+        # добавление старого токена в таблицу недавно обновлённых
+        UpdatedTokens.objects.create(
+            token = token,
+            creator = self
+            )
+        # создание нового токена
+        token = self.get_token()
+        return token
 
     # создаёт новый токен и сохраняет в бд токенов
     def __generate_new_jwt_token__(self):
@@ -89,23 +108,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             key=settings.SECRET_KEY,
             algorithm="HS256"
         )
-
-        # self.__save_token_to_bd__(token)
         return token
-    # jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=["HS256"])
-
-
-# class TokenForUser(models.Model):
-#     token = models.CharField(db_index=True, max_length=255)
-#     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-#     is_banned = models.BooleanField(default=False)
-#     is_updated = models.BooleanField(default=False)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     # метод для блокировки всех токенов пользователя
-#     def ban_all_user_tokens(token_for_ban:str):
-#         user_for_ban = TokenForUser.objects.filter(token=token_for_ban).first().creator
-#         TokenForUser.objects.filter(creator=user_for_ban).update(is_banned=True)
 
 
 class UpdatedTokens(models.Model):

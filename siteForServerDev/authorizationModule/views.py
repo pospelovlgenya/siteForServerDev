@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
+
 from .forms import *
-
-# Create your views here.
-
+from .functions import check_token
 
 def home(request):
     return render(request, "authorizationModule/home.html")
@@ -40,4 +39,16 @@ def signin(request):
 @login_required
 def signout(request):
     logout(request)
-    return redirect('home')
+    response = redirect('home')
+    response.delete_cookie('jwt_token')
+    return response
+
+@login_required
+def refreshtoken(request):
+    token_answer = check_token(request)
+    if (token_answer == 0):
+        signout(request)
+    response = redirect('home')
+    if (request.COOKIES.get('jwt_token') != token_answer):
+        response.set_cookie('jwt_token', token_answer)
+    return response

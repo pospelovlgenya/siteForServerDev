@@ -21,7 +21,7 @@ from authorizationModule import urls as authUrls
 from authorizationModule import views
 
 urlpatterns = [
-    path('', views.home),
+    path('', views.home, name='home'),
     path('login/', include(authUrls)),
     path('admin/', admin.site.urls),
 ]

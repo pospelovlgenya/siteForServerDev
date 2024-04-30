@@ -24,8 +24,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs'
-JWT_TOKEN_LIFETIME = timedelta(minutes=10)
-JWT_UPDATED_AUTODELETE_IN_MINS = 20
+JWT_TOKEN_LIFETIME = timedelta(minutes=3)
+JWT_UPDATED_AUTODELETE_IN_MINS = 1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -48,8 +48,8 @@ INSTALLED_APPS = [
 ]
 
 CRON_CLASSES = [
-    'authorizationModule.DeleteOldBannedTokens',
-    'authorizationModule.DeteleOldUpdatedTokens',
+    'authorizationModule.cron.DeleteOldBannedTokens',
+    'authorizationModule.cron.DeteleOldUpdatedTokens',
 ]
 
 MIDDLEWARE = [
