@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 
 from .forms import *
-from .functions import check_token
+from .functions import check_token, decode_token
 
 def home(request):
-    return render(request, "authorizationModule/home.html")
+    token_data = decode_token(request.COOKIES.get('jwt_token'))
+    return render(request, "authorizationModule/home.html", {'token_data': token_data})
 
 def signup(request):
     if request.method == 'POST':

@@ -66,6 +66,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     # позволяет пользователю получить новый токен
     def get_token(self):
+        # проверка пользователя в таблице банов
         if (BannedTokens.objects.filter(creator=self).count()):
             return 'you in ban list'
         return self.__generate_new_jwt_token__()
@@ -91,7 +92,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         token = self.get_token()
         return token
 
-    # создаёт новый токен и сохраняет в бд токенов
+    # создаёт новый токен
     def __generate_new_jwt_token__(self):
         expire_date = (
             datetime.now(UTC) +
@@ -101,6 +102,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         token = jwt.encode(
             payload={
+                "id": self.id,
                 "exp": expire_date,
                 "nbf": datetime.now(UTC),
                 "is_staff": self.is_staff,
@@ -111,12 +113,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         return token
 
 
+# таблица недавно обновлёных токенов
 class UpdatedTokens(models.Model):
     token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
 
+# таблица заблокированных пользователей (обновивших токен дважды)
 class BannedTokens(models.Model):
     token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
