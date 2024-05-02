@@ -6,7 +6,7 @@ Home
 <h2>Начальная страница</h2>
 {% if request.user.is_authenticated and request.COOKIES.jwt_token %}
     <p>Ваш jwt token = {{ request.COOKIES.jwt_token }}</p>
-    <p href="{%url 'refreshToken' %}">Проверить токен</p>
+    <p><a href="{%url 'refreshToken' %}">Проверить токен</a></p>
     <p>{{ token_data }}</p>
 {% else %}
     <p>Токена не обнаружено</p>
