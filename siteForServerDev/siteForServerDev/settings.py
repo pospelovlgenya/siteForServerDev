@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_ROOT = BASE_DIR / 'staticCollected'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Quick-start development settings - unsuitable for production
@@ -21,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs'
+JWT_TOKEN_LIFETIME = timedelta(minutes=3)
+JWT_UPDATED_AUTODELETE_IN_MINS = 1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
+    'django_cron',
+    'authorizationModule',
+]
+
+CRON_CLASSES = [
+    'authorizationModule.cron.DeleteOldBannedTokens',
+    'authorizationModule.cron.DeteleOldUpdatedTokens',
 ]
 
 MIDDLEWARE = [
@@ -81,6 +94,12 @@ DATABASES = {
 }
 
 
+# Custom user model with jwt tokens
+# *This custom app added in INSTALLED_APPS
+
+AUTH_USER_MODEL = 'authorizationModule.User'
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -116,6 +135,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = 'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
