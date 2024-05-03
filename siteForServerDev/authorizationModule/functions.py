@@ -18,6 +18,9 @@ def check_token(request):
                 'verify_signature': True
                 },
             )
+        # если токен существует, но id его пользователя и создателя не совпадает, то ошибка
+        if (data['id'] != request.user.id):
+            return 'Error'
         # если до истечения срока жизни токена меньше 2 минут, то он обновляется
         now_time = datetime.now(UTC) + timedelta(minutes=2)
         if (data['exp'] < int(now_time.timestamp())):
