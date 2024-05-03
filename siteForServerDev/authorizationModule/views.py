@@ -5,7 +5,9 @@ from django.contrib.auth import login, logout
 from .forms import UserRegisterForm, UserLoginForm
 from .functions import check_token
 
+
 def signup(request):
+    """Регистрация"""
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -20,6 +22,7 @@ def signup(request):
     return render(request, 'authorizationModule/signup.html', {'form': form})
 
 def signin(request):
+    """Авторизация"""
     if request.method =='POST':
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
@@ -37,6 +40,7 @@ def signin(request):
 
 @login_required
 def signout(request):
+    """Выход"""
     logout(request)
     response = redirect('home')
     response.delete_cookie('jwt_token')
@@ -44,6 +48,7 @@ def signout(request):
 
 @login_required
 def refreshtoken(request):
+    """Проверка подлиности токена и его обновление при необходимости"""
     token_answer = check_token(request)
     if (token_answer == 'Error'):
         signout(request)
