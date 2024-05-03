@@ -2,20 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 
-from .forms import *
-from .functions import check_token, decode_token
-
-def home(request):
-    token_data = decode_token(request.COOKIES.get('jwt_token'))
-    return render(request, "authorizationModule/home.html", {'token_data': token_data})
+from .forms import UserRegisterForm, UserLoginForm
+from .functions import check_token
 
 def signup(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
             token = user.get_token()
+            login(request, user)
             response = redirect('home')
             response.set_cookie('jwt_token', token)
             return response
@@ -28,8 +24,10 @@ def signin(request):
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
             token = user.get_token()
+            if token == 'Error':
+                return redirect('home')
+            login(request, user)
             response = redirect('home')
             response.set_cookie('jwt_token', token)
             return response
@@ -47,7 +45,7 @@ def signout(request):
 @login_required
 def refreshtoken(request):
     token_answer = check_token(request)
-    if (token_answer == 0):
+    if (token_answer == 'Error'):
         signout(request)
     response = redirect('home')
     if (request.COOKIES.get('jwt_token') != token_answer):

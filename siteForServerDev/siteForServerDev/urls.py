@@ -18,11 +18,12 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path, include
 from authorizationModule import urls as authUrls
-from authorizationModule import views
+from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('login/', include(authUrls)),
+    path('admin/', admin.site.urls, name='adminSite'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

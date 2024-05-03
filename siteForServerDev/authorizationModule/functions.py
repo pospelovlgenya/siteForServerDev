@@ -6,8 +6,8 @@ from django.conf import settings
 from datetime import datetime, timedelta, UTC
 
 
-# проверка токена (его подписи и оставшегося времени жизни)
 def check_token(request):
+    """Проверка токена (его подписи и оставшегося времени жизни)"""
     token = request.COOKIES.get('jwt_token')
     try:
         data = jwt.decode(
@@ -22,7 +22,6 @@ def check_token(request):
         now_time = datetime.now(UTC) + timedelta(minutes=2)
         if (data['exp'] < int(now_time.timestamp())):
             token = request.user.refresh_token(token)
-
         # если после проверки ответ - это токен, то всё хорошо
         return token
     # если время жизни токена истекло, то производится попытка его обновления
@@ -31,11 +30,11 @@ def check_token(request):
         return token
     # если токен изменили, то обновление не произойдёт
     except(DecodeError):
-        return 0
+        return 'Error'
     
 
-# получение информации, содержащейся в токене
 def decode_token(token):
+    """Получение информации, содержащейся в токене"""
     try:
         data = jwt.decode(
             jwt=token, 
@@ -46,6 +45,6 @@ def decode_token(token):
                 },
             )
         return data
-    # любая ошибка будет возвращена в виде 'Token error'
+    # любая ошибка будет возвращена в виде 'Error'
     except(InvalidTokenError):
-        return 'Token error'
+        return 'Error'

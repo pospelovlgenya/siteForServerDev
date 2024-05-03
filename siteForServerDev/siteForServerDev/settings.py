@@ -24,8 +24,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs'
-JWT_TOKEN_LIFETIME = timedelta(minutes=3)
+JWT_TOKEN_LIFETIME = timedelta(minutes=2)
 JWT_UPDATED_AUTODELETE_IN_MINS = 1
+TWO_FACTOR_LIFETIME = timedelta(minutes=5)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'django_cron',
+    'siteForServerDev',
     'authorizationModule',
 ]
 
