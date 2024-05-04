@@ -2,12 +2,13 @@ import jwt
 import random
 
 from datetime import datetime, timedelta, UTC
+
 from django.conf import settings 
+from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
-from django.db import models
-from django.db.models import Q
 
 
 class UserManager(BaseUserManager):
@@ -71,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return 'Error'
         if UpdatedTokens.is_token_in_table(token, self):
             return 'Error'
-        UpdatedTokens.add_token_to_table(token, self)
+        UserTokens.delete_user_token(token)
         token = self.get_token()
         return token
 
@@ -118,6 +119,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class UserTokens(models.Model):
+    """Таблица активных токенов, которые используют пользователи"""
     token = models.CharField(primary_key=True, max_length=255)
     creator = models.ForeignKey(User, db_index=True, on_delete=models.CASCADE)
     expired_at = models.PositiveIntegerField(db_index=True)
@@ -147,10 +149,11 @@ class UserTokens(models.Model):
         return tokens
 
     def delete_user_token(token:str):
-        """удаляет один указанный токен"""
-        userToken = UserTokens.objects.get(token=token)
-        UpdatedTokens.add_token_to_table(token, userToken.creator)
-        userToken.delete()
+        """Удаляет один указанный токен"""
+        if UserTokens.objects.filter(token=token).count():
+            userToken = UserTokens.objects.get(token=token)
+            UpdatedTokens.add_token_to_table(token, userToken.creator)
+            userToken.delete()
         return
 
     def delete_all_user_tokens(token:str, user_id):

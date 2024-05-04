@@ -3,7 +3,6 @@ from authorizationModule.functions import decode_token
 from authorizationModule.models import UserTokens
 
 
-
 def home(request):
     user_tokens = 0
     token_data = decode_token(request.COOKIES.get('jwt_token'))

@@ -36,6 +36,7 @@ def signin(request):
 @login_required
 def f2a_check(request):
     """Проверка кода двухфакторки"""
+    chit = ''
     if request.method =='POST':
         form = F2aForm(data=request.POST)
         if form.is_valid():
@@ -49,11 +50,28 @@ def f2a_check(request):
                 return response
     else:
         form = F2aForm()
-    chit = request.user.get_f2a_code()
+    # проверка оставшихся у пользователя доступных токенов доступа
+    if UserTokens.is_user_have_free_slots(request.user):
+        """ chit используется только для упрощения введения кода 
+         (может быть изменён на любой другой способ получения кода
+         пользователем без приложения значительных усилий) """
+        chit = request.user.get_f2a_code()
+    else:
+        return redirect('tooMany')
     return render(request, 'authorizationModule/f2a.html', {'form': form, 'chit':chit})
+
+@login_required
+def too_many(request):
+    """Используется для решения проблемы использования пользователем всех
+      доступных токенов доступа (заставляет отключить все остальные токены)"""
+    if UserTokens.is_user_have_free_slots(request.user):
+        return redirect('f2a')
+    return render(request, 'authorizationModule/toomany.html')
 
 def signout(request):
     """Полноценный выход из всего приложения"""
+    token = request.COOKIES.get('jwt_token')
+    UserTokens.delete_user_token(token)
     response = redirect('home')
     response.delete_cookie('jwt_token')
     return response
@@ -67,10 +85,14 @@ def refreshtoken(request):
     return response
 
 def delete_token(request, token):
-    if token != 'all':
-        UserTokens.delete_user_token(token)
-    else:
+    """Управляет удалением токенов"""
+    if token == 'toomany':
+        UserTokens.delete_all_user_tokens(' ', request.user.id)
+        return redirect('f2a')
+    if token == 'all':
         now_token = request.COOKIES.get('jwt_token')
         data = decode_token(now_token)
         UserTokens.delete_all_user_tokens(now_token, data['id'])
+    else:
+        UserTokens.delete_user_token(token)
     return redirect('home')

@@ -28,7 +28,7 @@ JWT_TOKEN_LIFETIME = timedelta(minutes=2)
 OLD_AUTODELETE_IN_MINS = 5 # не может быть меньше 5
 
 TWO_FACTOR_CODE_LIFETIME = timedelta(minutes=1)
-NUMBER_OF_MAX_USER_ACTIVE_SESSIONS = 2
+NUMBER_OF_MAX_USER_ACTIVE_SESSIONS = 1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
