@@ -11,7 +11,7 @@
 <div class="navbar">
 <span>
     <a href="{%url 'home' %}" class="navbar-item">Home</a>
-    {% if token_data != 'Error' and request.COOKIES.jwt_token %}
+    {% if token_data != Error and request.COOKIES.jwt_token %}
         {% if token_data.is_staff %}
             <a href="admin/" class="navbar-item">Admin</a>
         {% endif %}

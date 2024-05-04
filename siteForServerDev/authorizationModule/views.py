@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 
-from .models import F2ACodes
+from .models import F2ACodes, UserTokens
 from .forms import UserRegisterForm, UserLoginForm, F2aForm
-from .functions import check_token
+from .functions import check_token, decode_token
 
 
 def signup(request):
@@ -65,3 +65,12 @@ def refreshtoken(request):
     if (request.COOKIES.get('jwt_token') != token_answer):
         response.set_cookie('jwt_token', token_answer)
     return response
+
+def delete_token(request, token):
+    if token != 'all':
+        UserTokens.delete_user_token(token)
+    else:
+        now_token = request.COOKIES.get('jwt_token')
+        data = decode_token(now_token)
+        UserTokens.delete_all_user_tokens(now_token, data['id'])
+    return redirect('home')

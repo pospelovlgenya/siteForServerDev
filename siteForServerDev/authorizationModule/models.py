@@ -138,6 +138,30 @@ class UserTokens(models.Model):
             return True
         return False
     
+    def all_user_tokens(user_id):
+        """Получение всех активных токенов пользователя"""
+        user = User.objects.get(id=user_id)
+        now_time = datetime.now(UTC)
+        now_time = int(now_time.timestamp())
+        tokens = UserTokens.objects.filter(Q(creator=user) & Q(expired_at__gt=now_time))
+        return tokens
+
+    def delete_user_token(token:str):
+        """удаляет один указанный токен"""
+        userToken = UserTokens.objects.get(token=token)
+        UpdatedTokens.add_token_to_table(token, userToken.creator)
+        userToken.delete()
+        return
+
+    def delete_all_user_tokens(token:str, user_id):
+        """удаляет все токены, кроме используемого пользователем сейчас"""
+        user = User.objects.get(id=user_id)
+        userTokens = UserTokens.objects.filter(Q(creator=user) & ~Q(token=token))
+        for userToken in userTokens:
+            UpdatedTokens.add_token_to_table(userToken.token, userToken.creator)
+        userTokens.delete()
+        return
+
     def delete_old():
         """Удаление старых записей"""
         now_time = datetime.now(UTC)
@@ -178,7 +202,7 @@ class UpdatedTokens(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def is_token_in_table(token, user):
+    def is_token_in_table(token:str, user:User):
         """Проверка токена в таблице недавно обновлённых и добавление пользователя в бан при положительном ответе"""
         if (UpdatedTokens.objects.filter(token=token).count()):
             BannedTokens.objects.create(
@@ -188,7 +212,7 @@ class UpdatedTokens(models.Model):
             return True
         return False
     
-    def add_token_to_table(token, user):
+    def add_token_to_table(token:str, user:User):
         """Добавление старого токена в таблицу недавно обновлённых"""
         UpdatedTokens.objects.create(
             token = token,
@@ -209,7 +233,7 @@ class BannedTokens(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def is_user_in_table(user):
+    def is_user_in_table(user:User):
         """Проверка пользователя в таблице банов"""
         if (BannedTokens.objects.filter(creator=user).count()):
             return True
