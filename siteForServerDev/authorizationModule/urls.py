@@ -22,4 +22,5 @@ urlpatterns = [
     path('signin', views.signin, name="signIn"),
     path('signout', views.signout, name='signOut'),
     path('refresh', views.refreshtoken, name='refreshToken'),
+    path('f2a', views.f2a_check, name="f2a"),
 ]

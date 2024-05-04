@@ -80,15 +80,19 @@ class User(AbstractBaseUser, PermissionsMixin):
             return 'Error'
         return self.__generate_new_jwt_token__()
     
-    def get_code(self):
+    def get_f2a_code(self):
+        """
+        Позволяет получить и привязать к пользователя код
+        двухфакторки, также позволяет сменить этот код
+        """
         code = self.__generate_new_f2a_code__()
         F2ACodes.new_f2a_code(code, self)
-        return
+        return code
     
     def __generate_new_jwt_token__(self):
         """Создаёт новый jwt токен"""
-            # Настройка времени истечения токена
-        expire_date = datetime(
+        # Настройка времени истечения токена
+        expire_date = (
             datetime.now(UTC) +
             settings.JWT_TOKEN_LIFETIME
         )
@@ -96,6 +100,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         token = jwt.encode(
             payload={
                 "id": self.id,
+                "username": self.username,
                 "exp": expire_date,
                 "is_staff": self.is_staff,
             },
@@ -143,7 +148,6 @@ class UserTokens(models.Model):
 class F2ACodes(models.Model):
     """Таблица созданных кодов двухфакторки"""
     creator = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
-    # creator = models.ForeignKey(User, primary_key=True, on_delete=models.CASCADE)
     code = models.PositiveIntegerField(db_index=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -152,6 +156,14 @@ class F2ACodes(models.Model):
         F2ACodes.objects.update_or_create(creator=user, defaults={'code':code})
         return
 
+    def check_f2a_code(code:int, user:User):
+        """Проверка введённого кода двухфакторки на существование и верность"""
+        now_time = datetime.now(UTC) - settings.TWO_FACTOR_CODE_LIFETIME
+        if (F2ACodes.objects.filter(creator=user, created_at__gt=now_time).count):
+            if (F2ACodes.objects.get(creator=user).code == code):
+                return True
+        return False
+    
     def delete_old():
         """Удаление старых записей"""
         now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)

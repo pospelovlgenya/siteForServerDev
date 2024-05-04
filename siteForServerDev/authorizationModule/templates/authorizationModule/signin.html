@@ -5,7 +5,7 @@
 {% block content %}
     <p>Hello!</p>
 
-    <form method="POST" class"log-form">
+    <form method="POST" class="Log-form">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Sign in</button>

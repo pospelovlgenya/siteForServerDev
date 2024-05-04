@@ -11,11 +11,11 @@
 <div class="navbar">
 <span>
     <a href="{%url 'home' %}" class="navbar-item">Home</a>
-    {% if request.user.is_authenticated %}
-        {% if request.user.is_staff %}
+    {% if token_data != 'Error' and request.COOKIES.jwt_token %}
+        {% if token_data.is_staff %}
             <a href="admin/" class="navbar-item">Admin</a>
         {% endif %}
-        <a class="navbar-item">{{ user.username }}</a>
+        <a class="navbar-item">{{ token_data.username }}</a>
         <a href="{%url 'signOut' %}" class="navbar-item">Sign out</a>
     {% else %}
         <a href="{%url 'signIn' %}" class="navbar-item">Sign in</a>

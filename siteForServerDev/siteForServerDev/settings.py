@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs
 JWT_TOKEN_LIFETIME = timedelta(minutes=2)
 OLD_AUTODELETE_IN_MINS = 5 # не может быть меньше 5
 
-TWO_FACTOR_CODE_LIFETIME = timedelta(minutes=5)
+TWO_FACTOR_CODE_LIFETIME = timedelta(minutes=1)
 NUMBER_OF_MAX_USER_ACTIVE_SESSIONS = 2
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -52,10 +52,10 @@ INSTALLED_APPS = [
 ]
 
 CRON_CLASSES = [
-    'authorizationModule.DeleteOldBannedTokens',
-    'authorizationModule.DeteleOldUpdatedTokens',
-    'authorizationModule.DeleteOldF2ACodes',
-    'authorizationModule.DeleteOldUserTokens',
+    'authorizationModule.cron.DeleteOldBannedTokens',
+    'authorizationModule.cron.DeteleOldUpdatedTokens',
+    'authorizationModule.cron.DeleteOldF2ACodes',
+    'authorizationModule.cron.DeleteOldUserTokens',
 ]
 
 MIDDLEWARE = [

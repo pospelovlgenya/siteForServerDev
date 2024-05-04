@@ -5,9 +5,14 @@ from django.conf import settings
 
 from datetime import datetime, timedelta, UTC
 
+from .models import User
+
 
 def check_token(request):
-    """Проверка токена (его подписи и оставшегося времени жизни)"""
+    """
+    Проверка токена (его подписи и оставшегося времени жизни), 
+    если ответом является токен, то проверка пройдена
+    """
     token = request.COOKIES.get('jwt_token')
     try:
         data = jwt.decode(
@@ -18,18 +23,16 @@ def check_token(request):
                 'verify_signature': True
                 },
             )
-        # если токен существует, но id его пользователя и создателя не совпадает, то ошибка
-        if (data['id'] != request.user.id):
-            return 'Error'
         # если до истечения срока жизни токена меньше 2 минут, то он обновляется
         now_time = datetime.now(UTC) + timedelta(minutes=2)
         if (data['exp'] < int(now_time.timestamp())):
-            token = request.user.refresh_token(token)
+            token = User.objects.get(id=data.id).refresh_token(token)
         # если после проверки ответ - это токен, то всё хорошо
         return token
     # если время жизни токена истекло, то производится попытка его обновления
     except(ExpiredSignatureError):
-        token = request.user.refresh_token(token)
+        data = decode_token(token)
+        token = User.objects.get(id=data.id).refresh_token(token)
         return token
     # если токен изменили, то обновление не произойдёт
     except(DecodeError):
@@ -37,7 +40,7 @@ def check_token(request):
     
 
 def decode_token(token):
-    """Получение информации, содержащейся в токене"""
+    """Получение информации, содержащейся в токене (без проверок)"""
     try:
         data = jwt.decode(
             jwt=token, 

@@ -17,3 +17,9 @@ class UserRegisterForm(UserCreationForm):
 class UserLoginForm(AuthenticationForm):
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={
         "class": "form-control"}))
+
+class F2aForm(forms.Form):
+    code = forms.CharField(label='Введите код двухфакторки', max_length=6, widget=forms.TextInput(attrs={"class": "form-control"}))
+
+    class Meta:
+        fields = ['code']

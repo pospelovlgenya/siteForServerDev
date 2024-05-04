@@ -1,0 +1,15 @@
+{% extends "siteForServerDev/layout.html" %}
+{% block title %}
+    f2a check
+{% endblock %}
+{% block content %}
+    <p>f2a check</p>
+    <p> {{ chit }}</p>
+
+    <form method="POST" class="Log-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Отправить код</button>
+        <p>*Для запроса нового кода введите случайный код и отправьте</p>
+    </form>
+{% endblock %}
