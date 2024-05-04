@@ -45,6 +45,7 @@ def f2a_check(request):
                     return redirect('home')
                 response = redirect('home')
                 response.set_cookie('jwt_token', token)
+                logout(request)
                 return response
     else:
         form = F2aForm()
@@ -55,13 +56,6 @@ def signout(request):
     """Полноценный выход из всего приложения"""
     response = redirect('home')
     response.delete_cookie('jwt_token')
-    return response
-
-@login_required
-def local_signout(request):
-    """Выход из системы авторизации"""
-    logout(request)
-    response = redirect('home')
     return response
 
 def refreshtoken(request):

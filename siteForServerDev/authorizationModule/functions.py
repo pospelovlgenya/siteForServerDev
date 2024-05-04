@@ -26,13 +26,12 @@ def check_token(request):
         # если до истечения срока жизни токена меньше 2 минут, то он обновляется
         now_time = datetime.now(UTC) + timedelta(minutes=2)
         if (data['exp'] < int(now_time.timestamp())):
-            token = User.objects.get(id=data.id).refresh_token(token)
-        # если после проверки ответ - это токен, то всё хорошо
+            token = User.objects.get(id=data['id']).refresh_token(token)
         return token
     # если время жизни токена истекло, то производится попытка его обновления
     except(ExpiredSignatureError):
         data = decode_token(token)
-        token = User.objects.get(id=data.id).refresh_token(token)
+        token = User.objects.get(id=data['id']).refresh_token(token)
         return token
     # если токен изменили, то обновление не произойдёт
     except(DecodeError):
