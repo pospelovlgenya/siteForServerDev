@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
+from django.db.models import Q
 
 
 class UserManager(BaseUserManager):
@@ -149,7 +150,7 @@ class F2ACodes(models.Model):
     """Таблица созданных кодов двухфакторки"""
     creator = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     code = models.PositiveIntegerField(db_index=True, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
 
     def new_f2a_code(code:int, user:User):
         """Добавляет или обновляет код двухфакторки пользователя"""
@@ -159,7 +160,7 @@ class F2ACodes(models.Model):
     def check_f2a_code(code:int, user:User):
         """Проверка введённого кода двухфакторки на существование и верность"""
         now_time = datetime.now(UTC) - settings.TWO_FACTOR_CODE_LIFETIME
-        if (F2ACodes.objects.filter(creator=user, created_at__gt=now_time).count):
+        if (F2ACodes.objects.filter(Q(creator=user) & Q(created_at__gt=now_time)).count()):
             if (F2ACodes.objects.get(creator=user).code == code):
                 return True
         return False
