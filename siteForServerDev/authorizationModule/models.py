@@ -1,7 +1,7 @@
 import jwt
 import random
 
-from datetime import datetime, UTC
+from datetime import datetime, timedelta, UTC
 from django.conf import settings 
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -80,10 +80,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             return 'Error'
         return self.__generate_new_jwt_token__()
     
+    def get_code(self):
+        code = self.__generate_new_f2a_code__()
+        F2ACodes.new_f2a_code(code, self)
+        return
+    
     def __generate_new_jwt_token__(self):
         """Создаёт новый jwt токен"""
-        expire_date = (
             # Настройка времени истечения токена
+        expire_date = datetime(
             datetime.now(UTC) +
             settings.JWT_TOKEN_LIFETIME
         )
@@ -92,12 +97,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             payload={
                 "id": self.id,
                 "exp": expire_date,
-                "nbf": datetime.now(UTC),
                 "is_staff": self.is_staff,
             },
             key=settings.SECRET_KEY,
             algorithm="HS256"
         )
+        UserTokens.add_new_user_token(token, self, int(expire_date.timestamp()))
         return token 
     
     def __generate_new_f2a_code__(self):
@@ -106,11 +111,52 @@ class User(AbstractBaseUser, PermissionsMixin):
         return code
 
 
+class UserTokens(models.Model):
+    token = models.CharField(primary_key=True, max_length=255)
+    creator = models.ForeignKey(User, db_index=True, on_delete=models.CASCADE)
+    expired_at = models.PositiveIntegerField(db_index=True)
+
+    def add_new_user_token(token:str, user:User, expired_date:int):
+        """Добавляет запись о новом токене пользователя"""
+        UserTokens.objects.create(
+            token = token,
+            creator = user,
+            expired_at = expired_date
+        )
+        return
+    
+    def is_user_have_free_slots(user:User):
+        """проверяет наличие доступных мест под новый токен у пользователя"""
+        num_of_user_sessions = UserTokens.objects.filter(creator = user).count()
+        if (num_of_user_sessions < settings.NUMBER_OF_MAX_USER_ACTIVE_SESSIONS):
+            return True
+        return False
+    
+    def delete_old():
+        """Удаление старых записей"""
+        now_time = datetime.now(UTC)
+        now_time = int(now_time.timestamp())
+        UserTokens.objects.filter(expired_at__lt=now_time).delete()
+        return
+
+
 class F2ACodes(models.Model):
     """Таблица созданных кодов двухфакторки"""
-    code = models.IntegerField(db_index=True, unique=True)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    creator = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    # creator = models.ForeignKey(User, primary_key=True, on_delete=models.CASCADE)
+    code = models.PositiveIntegerField(db_index=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def new_f2a_code(code:int, user:User):
+        """Добавляет или обновляет код двухфакторки пользователя"""
+        F2ACodes.objects.update_or_create(creator=user, defaults={'code':code})
+        return
+
+    def delete_old():
+        """Удаление старых записей"""
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        F2ACodes.objects.filter(created_at__lt=now_time).delete()
+        return
 
 
 class UpdatedTokens(models.Model):
@@ -136,10 +182,16 @@ class UpdatedTokens(models.Model):
             creator = user
             )
         return
+    
+    def delete_old():
+        """Удаление старых записей"""
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        UpdatedTokens.objects.filter(created_at__lt=now_time).delete()
+        return
 
 
 class BannedTokens(models.Model):
-    """Таблица заблокированных пользователей (обновивших токен дважды)"""
+    """Таблица заблокированных пользователей (обновивших один токен дважды)"""
     token = models.CharField(db_index=True, max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -149,3 +201,10 @@ class BannedTokens(models.Model):
         if (BannedTokens.objects.filter(creator=user).count()):
             return True
         return False
+
+    def delete_old():
+        """Удаление старых записей"""
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        BannedTokens.objects.filter(created_at__lt=now_time).delete()
+        return
+    
