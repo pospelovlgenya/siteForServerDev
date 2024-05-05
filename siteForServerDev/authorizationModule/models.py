@@ -98,13 +98,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             datetime.now(UTC) +
             settings.JWT_TOKEN_LIFETIME
         )
-
+        # UserRoles.add_base_role(self)
+        full_crud = UserRoles.collect_user_crud(self)
         token = jwt.encode(
             payload={
                 "id": self.id,
                 "username": self.username,
                 "exp": expire_date,
                 "is_staff": self.is_staff,
+                "crud": full_crud
             },
             key=settings.SECRET_KEY,
             algorithm="HS256"
@@ -248,3 +250,83 @@ class BannedTokens(models.Model):
         BannedTokens.objects.filter(created_at__lt=now_time).delete()
         return
     
+
+class Roles(models.Model):
+    """Таблица ролей"""
+    role = models.CharField(primary_key=True, max_length=255)
+    path = models.CharField(db_index=True, max_length=255)
+    create_p = models.BooleanField(default=False)
+    read_p = models.BooleanField(default=False)
+    update_p = models.BooleanField(default=False)
+    delete_p = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def add_new_role(role:str, path:str, create_p=False, read_p=False, update_p=False, delete_p=False):
+        """Добавление новой роли"""
+        if not (role == 'base'):
+            Roles.objects.update_or_create(role=role, defaults={'path':path, 'create_p':create_p, 'read_p':read_p, 'update_p':update_p, 'delete_p':delete_p})
+        return
+    
+    def delete_role(role:str):
+        """Удаление роли, кроме базовой"""
+        if not (role == 'base'):
+            Roles.objects.filter(role=role).delete()
+        return
+    
+    def get_base_role():
+        """Получение базовой роли"""
+        base_role, _ = Roles.objects.get_or_create(role='base', defaults={'path':''})
+        return base_role
+
+
+class UserRoles(models.Model):
+    """Один user может иметь много ролей, но обязательно имеет base"""
+    user = models.ForeignKey(User, db_index=True, on_delete=models.CASCADE)
+    role = models.ForeignKey(Roles, on_delete=models.CASCADE)
+
+    def add_user_role(user:User, role:Roles):
+        """Добавление новой роли пользователю"""
+        UserRoles.objects.create(
+            user=user,
+            role=role
+        )
+        return
+    
+    def delete_user_role(user:User, role:Roles):
+        """Снятие роли с пользователя"""
+        base_role = Roles.get_base_role()
+        UserRoles.objects.filter(Q(user=user) & Q(role=role) & ~Q(role=base_role)).delete()
+        return
+    
+    def collect_user_crud(user:User):
+        """собирает все разрешения пользователя"""
+        full_crud = {}
+        cruds = UserRoles.objects.filter(user=user)
+        for crud in cruds:
+            crud_path = crud.role.path
+            if not full_crud.get(crud_path):
+                full_crud[crud_path] = {
+                    'create_p':False,
+                    'read_p':False,
+                    'update_p':False,
+                    'delete_p':False
+                }
+            crud_data = {
+                'create_p':crud.role.create_p,
+                'read_p':crud.role.read_p,
+                'update_p':crud.role.update_p,
+                'delete_p':crud.role.delete_p
+            }
+            for per in crud_data.items():
+                if per[1] == True:
+                    full_crud[crud_path][per[0]] = True
+        return full_crud
+
+    def add_base_role(user:User):
+        """Добавление базовой роли пользователю"""
+        base_role = Roles.get_base_role()
+        UserRoles.objects.create(
+            user=user,
+            role=base_role
+        )
+        return
