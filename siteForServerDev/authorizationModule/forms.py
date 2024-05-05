@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User
 
+
 class UserRegisterForm(UserCreationForm):
     username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.CharField(label='Почта', widget=forms.EmailInput(attrs={"class": "form-control"}))
@@ -14,9 +15,11 @@ class UserRegisterForm(UserCreationForm):
             'username', 'email', 'password1', 'password2', 
         ]
 
+
 class UserLoginForm(AuthenticationForm):
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={
         "class": "form-control"}))
+
 
 class F2aForm(forms.Form):
     code = forms.CharField(label='Введите код двухфакторки', max_length=6, widget=forms.TextInput(attrs={"class": "form-control"}))
