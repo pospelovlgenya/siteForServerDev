@@ -48,9 +48,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Время последнего обновления объекта "пользователь"
     updated_at = models.DateTimeField(auto_now=True)
 
-    # В качестве логина будет использоваться поле email
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    # В качестве логина будет использоваться поле username
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     # Указывает управляющего объектами класса
     objects = UserManager()
