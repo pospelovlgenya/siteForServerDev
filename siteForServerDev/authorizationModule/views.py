@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 
-from .models import F2ACodes, UserTokens
+from .models import F2ACodes, UserTokens, UserRoles
 from .forms import UserRegisterForm, UserLoginForm, F2aForm
 from .functions import check_token, decode_token
 
@@ -13,6 +13,7 @@ def signup(request):
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            UserRoles.add_base_role(user)
             login(request, user)
             response = redirect('f2a')
             return response
