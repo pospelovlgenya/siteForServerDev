@@ -339,3 +339,26 @@ class UserRoles(models.Model):
             role=base_role
         )
         return
+
+
+class MethodsLog(models.Model):
+    """Таблица для логов"""
+    method = models.CharField(db_index=True, max_length=255)
+    user = models.ForeignKey(User, db_index=True, null=True, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def add_log_record_by_user_id(method, user_id):
+        """Добавление записи о действии определённым пользователем"""
+        user = User.objects.get(id=user_id)
+        MethodsLog.objects.create(
+            method=method,
+            user=user
+        )
+        return
+    
+    def add_log_record_by_anonymous_user(method):
+        """Добавление записи о действии анонимным пользователем"""
+        MethodsLog.objects.create(
+            method=method
+        )
+        return
