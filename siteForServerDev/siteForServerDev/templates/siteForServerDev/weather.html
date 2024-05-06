@@ -1,0 +1,13 @@
+{% extends "siteForServerDev/layout.html" %}
+{% block title %}
+Weather
+{% endblock %}
+{% block content %}
+<h2>Weather</h2>
+{% if temperature != Error and wind_speed != Error %}
+        <p><a>Температура: {{ temperature }}</a></p>
+        <p><a>Скорость ветра: {{ wind_speed }}</a></p>
+{% else %}
+ <h3>Ошибка</h3>
+{% endif %}
+{% endblock %}

@@ -14,7 +14,7 @@
     <a href="{%url 'home' %}" class="navbar-item">Home</a>
     {% if token_data != 'Error' and token_data != Error and request.COOKIES.jwt_token %}
         {% if token_data.is_staff %}
-            <a href="admin/" class="navbar-item">Admin</a>
+            <a href="http://127.0.0.1:8000/admin/" class="navbar-item">Admin</a>
             <a href="{%url 'roleTest' %}" class="navbar-item">roleTest</a>
         {% endif %}
 
@@ -28,6 +28,7 @@
         <a href="{%url 'signIn' %}" class="navbar-item">Sign in</a>
         <a href="{%url 'signUp' %}" class="navbar-item">Sign up</a>
     {% endif %}
+    <a href="http://127.0.0.1:8000/weather/?city=khanty-mansiysk" class="navbar-item">Weather</a>
 </span>
 </div>
 

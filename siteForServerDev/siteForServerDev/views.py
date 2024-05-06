@@ -4,6 +4,9 @@ from django.http import HttpResponseForbidden
 from authorizationModule.functions import check_token, decode_token
 from authorizationModule.models import UserTokens, Roles, UserRoles, MethodsLog
 
+import requests
+from bs4 import BeautifulSoup
+
 
 def home(request):
     user_tokens = 0
@@ -26,3 +29,18 @@ def role_test(request):
             if token_data.get('is_staff') or token_data.get('crud', {}).get('/roletest', {}).get('read_p'):
                 return render(request, "siteForServerDev/roletest.html", {'token_data': token_data, 'all_user_roles': all_user_roles, 'roles': roles, 'user_roles': user_roles})
     return HttpResponseForbidden()
+
+def parse_weather(request):
+    city = request.GET.get('city')
+    url = f"https://yandex.ru/pogoda/{city}"
+    # url = f"https://yandex.ru/pogoda/khanty-mansiysk"
+    url_response = requests.get(url)
+    if url_response.status_code != 200:
+        return render(request, 'siteForServerDev/weather.html', {'temperature': 'Error', 'wind_speed': 'Error'})
+    page = BeautifulSoup(url_response.content, 'html.parser')
+    weather_block = page.find('div', class_='fact')
+    if weather_block is None:
+        return render(request, 'siteForServerDev/weather.html', {'temperature': 'Error', 'wind_speed': 'Error'})
+    temperature = weather_block.find('span', class_='temp__value').text
+    wind_speed = weather_block.find('span', class_='wind-speed').text
+    return render(request, 'siteForServerDev/weather.html', {'temperature': temperature, 'wind_speed': wind_speed})
