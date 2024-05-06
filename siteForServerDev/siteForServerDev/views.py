@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseForbidden
 
-from authorizationModule.functions import decode_token
+from authorizationModule.functions import check_token, decode_token
 from authorizationModule.models import UserTokens, Roles, UserRoles
 
 
@@ -15,8 +15,10 @@ def home(request):
 def role_test(request):
     roles = Roles.objects.all()
     user_roles = UserRoles.objects.all()
-    token_data = decode_token(request.COOKIES.get('jwt_token'))
-    if token_data != 'Error':
+    token = request.COOKIES.get('jwt_token')
+    check = check_token(token)
+    token_data = decode_token(token)
+    if check != 'Error' and token_data != 'Error':
         all_user_roles = UserRoles.get_all_user_roles_by_id(token_data.get('id'))
         if token_data.get('is_staff') or token_data.get('crud', {}).get('/roletest', {}).get('read_p'):
             return render(request, "siteForServerDev/roletest.html", {'token_data': token_data, 'all_user_roles': all_user_roles, 'roles': roles, 'user_roles': user_roles})
