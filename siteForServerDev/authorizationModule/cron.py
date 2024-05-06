@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, UTC
 
 from django.conf import settings
 from django_cron import CronJobBase, Schedule
-from authorizationModule.models import BannedTokens, UpdatedTokens, F2ACodes, UserTokens
+from authorizationModule.models import BannedTokens, UpdatedTokens, F2ACodes, UserTokens, MethodsLog
 
 
 class DeleteOldBannedTokens(CronJobBase):
@@ -42,3 +42,12 @@ class DeleteOldUserTokens(CronJobBase):
 
     def do(self):
         UserTokens.delete_old()
+
+
+class CollectStatistics(CronJobBase):
+    RUN_EVERY_MINS = settings.CRON_COLLECT_STATISTICS_IN_MINS
+    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
+    code = 'authorizationModule.CollectStatistics'
+
+    def do(self):
+        MethodsLog.collect_statistics()

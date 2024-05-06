@@ -17,6 +17,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_ROOT = BASE_DIR / 'staticCollected'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATISTIC_FILE_ROOT = BASE_DIR / 'Statistics.txt'
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,6 +27,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs'
 JWT_TOKEN_LIFETIME = timedelta(minutes=2)
 CRONS_PERIOD_IN_MINS = 5 # не может быть меньше 5
+CRON_COLLECT_STATISTICS_IN_MINS = 5 # не может быть меньше 5
 
 TWO_FACTOR_CODE_LIFETIME = timedelta(minutes=1)
 NUMBER_OF_MAX_USER_ACTIVE_SESSIONS = 1
@@ -56,6 +58,7 @@ CRON_CLASSES = [
     'authorizationModule.cron.DeteleOldUpdatedTokens',
     'authorizationModule.cron.DeleteOldF2ACodes',
     'authorizationModule.cron.DeleteOldUserTokens',
+    'authorizationModule.cron.CollectStatistics',
 ]
 
 MIDDLEWARE = [
