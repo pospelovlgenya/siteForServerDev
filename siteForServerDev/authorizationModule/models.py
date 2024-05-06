@@ -358,7 +358,7 @@ class MethodsLog(models.Model):
     
     def add_log_record_by_anonymous_user(method):
         """Добавление записи о действии анонимным пользователем"""
-        MethodsLog.objects.create(
+        asd = MethodsLog.objects.create(
             method=method
         )
         return

@@ -96,12 +96,13 @@ def refreshtoken(request):
 
 def delete_token(request, token_spec):
     """Управляет удалением токенов"""
+    if token_spec == 'toomany':
+        MethodsLog.add_log_record_by_user_id('deleteTooMany',request.user.id)
+        UserTokens.delete_all_user_tokens(' ', request.user.id)
+        return redirect('f2a')
     token = request.COOKIES.get('jwt_token')
     token_data = decode_token(token)
     MethodsLog.add_log_record_by_user_id('deleteTokens',token_data.get('id'))
-    if token_spec == 'toomany':
-        UserTokens.delete_all_user_tokens(' ', request.user.id)
-        return redirect('f2a')
     if token_spec == 'all':
         UserTokens.delete_all_user_tokens(token, token_data.get('id'))
     else:

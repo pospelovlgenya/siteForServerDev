@@ -24,5 +24,5 @@ urlpatterns = [
     path('refresh', views.refreshtoken, name='refreshToken'),
     path('f2a', views.f2a_check, name="f2a"),
     path('toomany', views.too_many, name="tooMany"),
-    path('delete/<str:token>/', views.delete_token),
+    path('delete/<str:token_spec>/', views.delete_token),
 ]
