@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 
-from .models import F2ACodes, UserTokens, UserRoles, MethodsLog
+from .models import F2ACodes, UserTokens, UserRoles
 from .forms import UserRegisterForm, UserLoginForm, F2aForm
 from .functions import check_token, decode_token
 
@@ -10,7 +10,6 @@ from .functions import check_token, decode_token
 def signup(request):
     """Регистрация"""
     if request.method == 'POST':
-        MethodsLog.add_log_record_by_anonymous_user('signUp')
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -25,7 +24,6 @@ def signup(request):
 def signin(request):
     """Авторизация"""
     if request.method =='POST':
-        MethodsLog.add_log_record_by_anonymous_user('signIn')
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -40,7 +38,6 @@ def signin(request):
 def f2a_check(request):
     """Проверка кода двухфакторки"""
     chit = ''
-    MethodsLog.add_log_record_by_user_id('f2aCheck', request.user.id)
     if request.method =='POST':
         form = F2aForm(data=request.POST)
         if form.is_valid():
@@ -68,7 +65,6 @@ def f2a_check(request):
 def too_many(request):
     """Используется для решения проблемы использования пользователем всех
       доступных токенов доступа (заставляет отключить все остальные токены)"""
-    MethodsLog.add_log_record_by_user_id('tooMany', request.user.id)
     if UserTokens.is_user_have_free_slots(request.user):
         return redirect('f2a')
     return render(request, 'authorizationModule/toomany.html')
@@ -77,7 +73,6 @@ def signout(request):
     """Полноценный выход из всего приложения"""
     token = request.COOKIES.get('jwt_token')
     token_data = decode_token(token)
-    MethodsLog.add_log_record_by_user_id('signOut', token_data.get('id'))
     UserTokens.delete_user_token(token)
     response = redirect('home')
     response.delete_cookie('jwt_token')
@@ -86,8 +81,6 @@ def signout(request):
 def refreshtoken(request):
     """Проверка подлиности токена и его обновление при необходимости"""
     token = request.COOKIES.get('jwt_token')
-    token_data = decode_token(token)
-    MethodsLog.add_log_record_by_user_id('refreshToken', token_data.get('id'))
     token_answer = check_token(request)
     response = redirect('home')
     if (token != token_answer):
@@ -97,12 +90,10 @@ def refreshtoken(request):
 def delete_token(request, token_spec):
     """Управляет удалением токенов"""
     if token_spec == 'toomany':
-        MethodsLog.add_log_record_by_user_id('deleteTooMany',request.user.id)
         UserTokens.delete_all_user_tokens(' ', request.user.id)
         return redirect('f2a')
     token = request.COOKIES.get('jwt_token')
     token_data = decode_token(token)
-    MethodsLog.add_log_record_by_user_id('deleteTokens',token_data.get('id'))
     if token_spec == 'all':
         UserTokens.delete_all_user_tokens(token, token_data.get('id'))
     else:

@@ -1,12 +1,11 @@
 import jwt
 import random
-import pathlib
 
 from datetime import datetime, timedelta, UTC
 
 from django.conf import settings 
 from django.db import models
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
@@ -339,39 +338,4 @@ class UserRoles(models.Model):
             user=user,
             role=base_role
         )
-        return
-
-
-class MethodsLog(models.Model):
-    """Таблица для логов"""
-    method = models.CharField(db_index=True, max_length=255)
-    user = models.ForeignKey(User, db_index=True, null=True, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def add_log_record_by_user_id(method, user_id):
-        """Добавление записи о действии определённым пользователем"""
-        user = User.objects.get(id=user_id)
-        MethodsLog.objects.create(
-            method=method,
-            user=user
-        )
-        return
-    
-    def add_log_record_by_anonymous_user(method):
-        """Добавление записи о действии анонимным пользователем"""
-        asd = MethodsLog.objects.create(
-            method=method
-        )
-        return
-    
-    def collect_statistics():
-        """Сбор рейтинга методов по количеству обращений"""
-        unique_methods_counts = MethodsLog.objects.values('method').annotate(count=Count('method')).order_by('-count')
-        f = pathlib.Path.open( settings.STATISTIC_FILE_ROOT, 'w', encoding='utf-8' )
-        i = 1
-        for method in unique_methods_counts:
-            to_write = '' + str(i) + '. ' + str(method.get('method')) + ': ' + str(method.get('count')) + '\n'
-            f.write(to_write) 
-            i += 1
-        f.close()
         return
