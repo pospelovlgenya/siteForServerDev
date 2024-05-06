@@ -25,7 +25,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!-zf*j1uzb3idkqz0+jx476m39ggltycrqs7yg3yx$fk(or$vs'
 JWT_TOKEN_LIFETIME = timedelta(minutes=2)
-OLD_AUTODELETE_IN_MINS = 5 # не может быть меньше 5
+CRONS_PERIOD_IN_MINS = 5 # не может быть меньше 5
 
 TWO_FACTOR_CODE_LIFETIME = timedelta(minutes=1)
 NUMBER_OF_MAX_USER_ACTIVE_SESSIONS = 1

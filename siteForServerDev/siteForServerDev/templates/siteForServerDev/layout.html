@@ -5,6 +5,7 @@
     <title>{% block title %}{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'siteForServerDev/site.css' %}"/>
+    {% load custom_filters %}
 </head>
 
 <body>
@@ -14,7 +15,13 @@
     {% if token_data != 'Error' and token_data != Error and request.COOKIES.jwt_token %}
         {% if token_data.is_staff %}
             <a href="admin/" class="navbar-item">Admin</a>
+            <a href="{%url 'roleTest' %}" class="navbar-item">roleTest</a>
         {% endif %}
+
+        {% if token_data.crud|get_item:'/roletest'|get_item:'read_p' %}
+            <a href="{%url 'roleTest' %}" class="navbar-item">roleTest</a>
+        {% endif %}
+        
         <a class="navbar-item">{{ token_data.username }}</a>
         <a href="{%url 'signOut' %}" class="navbar-item">Sign out</a>
     {% else %}

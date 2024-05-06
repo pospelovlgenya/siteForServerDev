@@ -7,7 +7,7 @@ from authorizationModule.models import BannedTokens, UpdatedTokens, F2ACodes, Us
 
 class DeleteOldBannedTokens(CronJobBase):
     """Автоматическое удаление старых записей о заблокированных токенах и пользователях"""
-    RUN_EVERY_MINS = settings.OLD_AUTODELETE_IN_MINS
+    RUN_EVERY_MINS = settings.CRONS_PERIOD_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.DeleteOldBannedTokens'
 
@@ -17,7 +17,7 @@ class DeleteOldBannedTokens(CronJobBase):
 
 class DeteleOldUpdatedTokens(CronJobBase):
     """Автоматическое удаление старых записей о недавно обновлённых токенах"""
-    RUN_EVERY_MINS = settings.OLD_AUTODELETE_IN_MINS
+    RUN_EVERY_MINS = settings.CRONS_PERIOD_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.DeteleOldUpdatedTokens'
 
@@ -26,7 +26,7 @@ class DeteleOldUpdatedTokens(CronJobBase):
 
 class DeleteOldF2ACodes(CronJobBase):
     """Автоматическое удаление старых записей о кодах двухфакторки"""
-    RUN_EVERY_MINS = settings.OLD_AUTODELETE_IN_MINS
+    RUN_EVERY_MINS = settings.CRONS_PERIOD_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.DeleteOldF2ACodes'
 
@@ -36,7 +36,7 @@ class DeleteOldF2ACodes(CronJobBase):
 
 class DeleteOldUserTokens(CronJobBase):
     """Автоматическое удаление старых записей о токенах пользователей"""
-    RUN_EVERY_MINS = settings.OLD_AUTODELETE_IN_MINS
+    RUN_EVERY_MINS = settings.CRONS_PERIOD_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.DeleteOldUserTokens'
 

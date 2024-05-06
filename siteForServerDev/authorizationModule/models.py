@@ -98,7 +98,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             datetime.now(UTC) +
             settings.JWT_TOKEN_LIFETIME
         )
-        # UserRoles.add_base_role(self)
         full_crud = UserRoles.collect_user_crud(self)
         token = jwt.encode(
             payload={
@@ -196,7 +195,7 @@ class F2ACodes(models.Model):
     
     def delete_old():
         """Удаление старых записей"""
-        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.CRONS_PERIOD_IN_MINS)
         F2ACodes.objects.filter(created_at__lt=now_time).delete()
         return
 
@@ -227,7 +226,7 @@ class UpdatedTokens(models.Model):
     
     def delete_old():
         """Удаление старых записей"""
-        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.CRONS_PERIOD_IN_MINS)
         UpdatedTokens.objects.filter(created_at__lt=now_time).delete()
         return
 
@@ -246,7 +245,7 @@ class BannedTokens(models.Model):
 
     def delete_old():
         """Удаление старых записей"""
-        now_time = datetime.now(UTC) - timedelta(minutes=settings.OLD_AUTODELETE_IN_MINS)
+        now_time = datetime.now(UTC) - timedelta(minutes=settings.CRONS_PERIOD_IN_MINS)
         BannedTokens.objects.filter(created_at__lt=now_time).delete()
         return
     
@@ -260,6 +259,10 @@ class Roles(models.Model):
     update_p = models.BooleanField(default=False)
     delete_p = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        """Изменяет визуальное представление объекта таблицы"""
+        return self.role
 
     def add_new_role(role:str, path:str, create_p=False, read_p=False, update_p=False, delete_p=False):
         """Добавление новой роли"""
@@ -283,6 +286,12 @@ class UserRoles(models.Model):
     """Один user может иметь много ролей, но обязательно имеет base"""
     user = models.ForeignKey(User, db_index=True, on_delete=models.CASCADE)
     role = models.ForeignKey(Roles, on_delete=models.CASCADE)
+
+    def get_all_user_roles_by_id(user_id):
+        """Получает все роли пользователя по его id"""
+        user = User.objects.get(id=user_id)
+        all_user_roles = UserRoles.objects.filter(user=user).all()
+        return all_user_roles
 
     def add_user_role(user:User, role:Roles):
         """Добавление новой роли пользователю"""
