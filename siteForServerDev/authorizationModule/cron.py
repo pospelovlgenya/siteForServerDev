@@ -47,6 +47,7 @@ class DeleteOldUserTokens(CronJobBase):
 
 
 class CollectStatistics(CronJobBase):
+    """Автоматическое создание рейтинга методов и отправка админу"""
     RUN_EVERY_MINS = settings.CRON_COLLECT_STATISTICS_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.CollectStatistics'
@@ -55,6 +56,7 @@ class CollectStatistics(CronJobBase):
         MethodsLog.collect_statistics()
 
 class ParseWeatherSite(CronJobBase):
+    """Автоматическая отправка результата парсинга админу"""
     RUN_EVERY_MINS = settings.CRON_COLLECT_STATISTICS_IN_MINS
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'authorizationModule.ParseWeatherSite'
@@ -63,6 +65,6 @@ class ParseWeatherSite(CronJobBase):
         city = settings.CITY
         temperature, wind_speed = get_weather_info(city)
         f = pathlib.Path.open( settings.WEATHER_FILE_ROOT, 'w', encoding='utf-8' )
-        to_write = 'Погода в ' + city + ':\n' + 'Температура: ' + temperature + ',\n' + 'Скорость ветра: ' + wind_speed + ','
+        to_write = 'Погода в ' + city + ':\n' + 'Температура: ' + temperature + ';\n' + 'Скорость ветра: ' + wind_speed + ';'
         f.write(to_write)
         f.close()
