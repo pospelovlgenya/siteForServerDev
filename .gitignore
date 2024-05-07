@@ -26,6 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 siteForServerDev/Statistics.txt
+siteForServerDev/Weather.txt
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

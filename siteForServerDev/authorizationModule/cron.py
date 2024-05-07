@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, UTC
+import pathlib
 
 from django.conf import settings
 from django_cron import CronJobBase, Schedule
 from authorizationModule.models import BannedTokens, UpdatedTokens, F2ACodes, UserTokens, MethodsLog
+from .functions import get_weather_info
 
 
 class DeleteOldBannedTokens(CronJobBase):
@@ -51,3 +53,16 @@ class CollectStatistics(CronJobBase):
 
     def do(self):
         MethodsLog.collect_statistics()
+
+class ParseWeatherSite(CronJobBase):
+    RUN_EVERY_MINS = settings.CRON_COLLECT_STATISTICS_IN_MINS
+    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
+    code = 'authorizationModule.ParseWeatherSite'
+
+    def do(self):
+        city = settings.CITY
+        temperature, wind_speed = get_weather_info(city)
+        f = pathlib.Path.open( settings.WEATHER_FILE_ROOT, 'w', encoding='utf-8' )
+        to_write = 'Погода в ' + city + ':\n' + 'Температура: ' + temperature + ',\n' + 'Скорость ветра: ' + wind_speed + ','
+        f.write(to_write)
+        f.close()
